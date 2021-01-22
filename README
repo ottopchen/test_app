@@ -1,2 +1,7 @@
-install csv-parser
-npm install csv-parser
+to run:
+
+npm install
+npm start
+
+navigate to http://localhost:3000/
+
