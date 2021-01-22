@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Homesome Site</title>
+
+    <link
+      rel="stylesheet"
+      href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css"
+    />
+    <style>
+      body {
+        padding-top: 10;
+      }
+      #map {
+        height: 50%;
+        width: 350px;
+        position: absolute !important;
+        top: 10;
+        left: 0;
+      }
+      #listings {
+        margin-left: 400px;
+        display: inline-block;
+        width: 100%;
+      }
+
+      td {
+        vertical-align: top;
+        padding: 3px;
+        border: 1px solid black;
+      }
+    </style>
+
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDV7KzfhWkKutZ7nw1ti7-w-4yshNZXrO4&callback=initMap&libraries=&v=weekly"
+      defer
+    ></script>
+
+    <script>
+      // Get API Url and pass through search params
+      const urlParams = new URLSearchParams(window.location.search);
+      const name = urlParams.get("name");
+      const page = urlParams.get("page");
+      const limit = urlParams.get("limit");
+
+      let endpoint = "http://localhost:3000/listings";
+      if (name || page || limit) {
+        endpoint = `${endpoint}?${urlParams.toString()}`;
+      }
+
+      // create map
+      function initMap() {
+        const map = new google.maps.Map(document.getElementById("map"), {
+          zoom: 4,
+          center: { lat: 37.7, lng: 122.4 }
+        });
+
+        fetch(endpoint)
+          .then(response => response.json())
+          .then(data => {
+            data.forEach(datum => {
+              const marker = new google.maps.Marker({
+                position: {
+                  lat: parseFloat(datum.lat),
+                  lng: parseFloat(datum.long)
+                },
+                map: map
+              });
+            });
+          });
+      }
+
+      // Could move this into call above but doesn't work currently because google map API requires billing
+      fetch(endpoint)
+        .then(response => response.json())
+        .then(data => {
+          var table = document.createElement("table");
+          data.forEach(el => {
+            var tr = document.createElement("tr");
+
+            var nameCol = document.createElement("td");
+            nameCol.textContent = el.name;
+            tr.appendChild(nameCol);
+
+            var cityCol = document.createElement("td");
+            cityCol.textContent = el.city;
+            tr.appendChild(cityCol);
+
+            var countryCol = document.createElement("td");
+            countryCol.textContent = el.country;
+            tr.appendChild(countryCol);
+
+            var descCol = document.createElement("td");
+            descCol.textContent = el.descriptions;
+            tr.appendChild(descCol);
+
+            var imgCol = document.createElement("td");
+            var img = document.createElement("img");
+            img.setAttribute(
+              "src",
+              `https://picsum.photos/id/${el.id}/200/300`
+            );
+            imgCol.appendChild(img);
+            tr.appendChild(imgCol);
+
+            table.appendChild(tr);
+          });
+          var app = document.querySelector("#listings");
+          app.appendChild(table);
+        });
+    </script>
+  </head>
+  <body>
+    <form action="http://localhost:3000">
+      <input id="textbox" name="name" type="text" value="" size="25" />
+      <input type="submit" value="Search" />
+    </form>
+    <div id="map"></div>
+    <div id="listings"></div>
+  </body>
+</html>
